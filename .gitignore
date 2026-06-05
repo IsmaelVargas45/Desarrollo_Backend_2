@@ -1,0 +1,19 @@
+# Carpetas generadas al compilar
+bin/
+obj/
+
+# Configuración de Visual Studio
+.vs/
+
+# Configuración local de VS Code
+.vscode/
+
+# Archivos de usuario
+*.user
+*.suo
+
+# Logs
+*.log
+
+# Configuración local (si tiene datos sensibles)
+appsettings.Development.json
