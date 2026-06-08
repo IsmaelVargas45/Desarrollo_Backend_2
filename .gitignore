@@ -17,3 +17,6 @@ obj/
 
 # Configuración local (si tiene datos sensibles)
 appsettings.Development.json
+*.db
+*.db-shm
+*.db-wal
