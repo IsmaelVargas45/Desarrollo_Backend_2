@@ -1,19 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Gestor de Tareas</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <h1>Mis Tareas</h1>
+  <div class="contenedor">
+    <h1>📋 Mis Tareas</h1>
 
     <div>
         <input type="text" id="titulo" placeholder="Título">
         <input type="text" id="descripcion" placeholder="Descripción">
-        <button onclick="crearTarea()">Agregar</button>
+        <button onclick="crearTarea()">Agregar tarea</button>
+        <input
+        type="text"
+        id="buscar"
+        placeholder="Buscar tarea..."
+        onkeyup="cargarTareas()">
     </div>
 
     <div id="lista"></div>
+</div>
 
     <script src="/js/app.js"></script>
 </body>
