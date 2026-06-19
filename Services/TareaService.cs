@@ -1,12 +1,12 @@
+using Desarrollo_Backend_2.Data;
 using Microsoft.EntityFrameworkCore;
 using Desarrollo_Backend_2.Models;
-
 namespace Desarrollo_Backend_2.Services;
 
 public class TareaService : ITareaService
 {
-    private readonly AppDbContext _context;
-    public TareaService(AppDbContext context)
+    private readonly ApplicationDbContext _context;
+    public TareaService(ApplicationDbContext context)
     {
         _context = context;
     }

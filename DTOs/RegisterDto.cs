@@ -8,10 +8,3 @@ namespace Desarrollo_Backend_2.DTOs
         public string NombreCompleto { get; set; }
     }
 }
-
-// DTOs/LoginDto.cs
-public class LoginDto
-{
-    public string Email { get; set; }
-    public string Password { get; set; }
-}
