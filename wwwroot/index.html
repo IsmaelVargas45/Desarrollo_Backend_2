@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Manager</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="app">
@@ -34,18 +34,28 @@
                 <span id="user-name"></span> (<span id="user-role"></span>)
                 <button onclick="logout()">Cerrar sesión</button>
             </div>
-            <h2>Mis Tareas</h2>
 
-            <!-- Solo Admin ve esto -->
-            <div id="admin-panel" style="display:none;">
+            <div id="tasks-toolbar">
+                <h2>Mis Tareas</h2>
+                <div id="tasks-toolbar-actions">
+                    <input type="text" id="buscar-tarea" placeholder="Buscar por título..." oninput="filtrarTareas()">
+                    <button id="btn-nueva-tarea" onclick="abrirModalTarea()" style="display:none;">Crear tarea</button>
+                </div>
+            </div>
+
+            <div id="lista-tareas"></div>
+        </div>
+
+        <!-- Modal: Crear nueva tarea (solo Admin) -->
+        <div id="admin-panel-overlay" style="display:none;" onclick="cerrarModalTareaSiFondo(event)">
+            <div id="admin-panel">
+                <button id="admin-panel-close" onclick="cerrarModalTarea()" aria-label="Cerrar">&times;</button>
                 <h3>Crear nueva tarea</h3>
                 <input type="text" id="new-titulo" placeholder="Título">
                 <input type="text" id="new-descripcion" placeholder="Descripción">
                 <select id="new-usuario"></select>
                 <button onclick="crearTarea()">Crear</button>
             </div>
-
-            <div id="lista-tareas"></div>
         </div>
     </div>
 

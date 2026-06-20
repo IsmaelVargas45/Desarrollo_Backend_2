@@ -1,8 +1,528 @@
-body { font-family: Arial, sans-serif; margin: 20px; }
-#auth-section { max-width: 400px; margin: 0 auto; }
-input, button, select { display: block; width: 100%; margin: 8px 0; padding: 8px; }
-button { cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
-#user-info { display: flex; justify-content: space-between; align-items: center; }
-#lista-tareas ul { list-style: none; padding: 0; }
-#lista-tareas li { border: 1px solid #ccc; padding: 10px; margin: 5px 0; border-radius: 4px; }
-.admin-panel { border: 1px solid green; padding: 10px; margin: 10px 0; background: #f0fff0; }
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: #14171c;
+  background-image:
+    radial-gradient(ellipse 900px 500px at 50% -10%, rgba(212, 160, 86, 0.07), transparent),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 32px);
+  color: #e4e6eb;
+  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* ============ AUTH ============ */
+
+#auth-section {
+  width: 100%;
+  max-width: 360px;
+  margin: 10vh auto 0;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+#auth-section h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #8b909c;
+  margin: 0 0 32px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#auth-section h1::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #d4a056;
+}
+
+#login-form,
+#register-form {
+  background: #1b1f27;
+  border: 1px solid #2a2f3a;
+  border-radius: 4px;
+  padding: 28px;
+  box-sizing: border-box;
+}
+
+#login-form h2,
+#register-form h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #f0f1f4;
+  margin: 0 0 22px;
+}
+
+#login-form input,
+#register-form input {
+  display: block;
+  width: 100%;
+  background: #14171c;
+  border: 1px solid #333a47;
+  border-radius: 3px;
+  color: #e4e6eb;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  padding: 12px 13px;
+  margin: 0 0 10px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+#login-form input::placeholder,
+#register-form input::placeholder {
+  color: #5b6170;
+}
+
+#login-form input:focus,
+#register-form input:focus {
+  outline: none;
+  border-color: #d4a056;
+}
+
+#login-form input:focus-visible,
+#register-form input:focus-visible {
+  outline: 2px solid #d4a056;
+  outline-offset: 1px;
+}
+
+#login-form button,
+#register-form button {
+  display: block;
+  width: 100%;
+  background: #d4a056;
+  color: #1a1206;
+  border: none;
+  border-radius: 3px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px;
+  margin-top: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  box-sizing: border-box;
+}
+
+#login-form button:hover,
+#register-form button:hover {
+  background: #e3b06a;
+}
+
+#login-form button:focus-visible,
+#register-form button:focus-visible {
+  outline: 2px solid #d4a056;
+  outline-offset: 2px;
+}
+
+#auth-section p {
+  font-size: 13px;
+  color: #8b909c;
+  margin: 18px 0 0;
+  text-align: center;
+}
+
+#auth-section a {
+  color: #d4a056;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+#auth-section a:hover {
+  text-decoration: underline;
+}
+
+/* ============ TASKS PANEL ============ */
+
+#tasks-section {
+  width: 100%;
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+  box-sizing: border-box;
+}
+
+#user-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid #232830;
+  font-size: 13px;
+  color: #8b909c;
+}
+
+#user-name {
+  color: #f0f1f4;
+  font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+  margin-right: 6px;
+}
+
+#user-role {
+  text-transform: uppercase;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.06em;
+  color: #d4a056;
+}
+
+#user-info button {
+  background: transparent;
+  border: 1px solid #333a47;
+  border-radius: 3px;
+  color: #8b909c;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+#user-info button:hover {
+  border-color: #5b6170;
+  color: #e4e6eb;
+}
+
+#tasks-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+#tasks-toolbar h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #f0f1f4;
+  margin: 0;
+}
+
+#tasks-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#buscar-tarea {
+  background: #1b1f27;
+  border: 1px solid #2a2f3a;
+  border-radius: 3px;
+  color: #e4e6eb;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  padding: 9px 12px;
+  width: 220px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+#buscar-tarea::placeholder {
+  color: #5b6170;
+}
+
+#buscar-tarea:focus {
+  outline: none;
+  border-color: #d4a056;
+}
+
+#buscar-tarea:focus-visible {
+  outline: 2px solid #d4a056;
+  outline-offset: 1px;
+}
+
+#btn-nueva-tarea {
+  background: #d4a056;
+  color: #1a1206;
+  border: none;
+  border-radius: 3px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 9px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+#btn-nueva-tarea:hover {
+  background: #e3b06a;
+}
+
+#btn-nueva-tarea:focus-visible {
+  outline: 2px solid #d4a056;
+  outline-offset: 2px;
+}
+
+/* ============ MODAL: CREAR TAREA ============ */
+
+#admin-panel-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 15, 0.72);
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+#admin-panel {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: #1b1f27;
+  border: 1px solid #2a2f3a;
+  border-left: 2px solid #d4a056;
+  border-radius: 4px;
+  padding: 28px;
+  box-sizing: border-box;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+#admin-panel-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  color: #5b6170;
+  font-size: 22px;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+#admin-panel-close:hover {
+  color: #e4e6eb;
+  background: #232830;
+}
+
+#admin-panel h3 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #8b909c;
+  margin: 0 0 16px;
+}
+
+#admin-panel input,
+#admin-panel select {
+  display: block;
+  width: 100%;
+  background: #14171c;
+  border: 1px solid #333a47;
+  border-radius: 3px;
+  color: #e4e6eb;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  padding: 11px 13px;
+  margin: 0 0 10px;
+  box-sizing: border-box;
+}
+
+#admin-panel select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #5b6170 50%),
+    linear-gradient(135deg, #5b6170 50%, transparent 50%);
+  background-position: calc(100% - 16px) center, calc(100% - 11px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 32px;
+}
+
+#admin-panel input:focus,
+#admin-panel select:focus {
+  outline: none;
+  border-color: #d4a056;
+}
+
+#admin-panel button {
+  background: #d4a056;
+  color: #1a1206;
+  border: none;
+  border-radius: 3px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 11px 20px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+#admin-panel button:hover {
+  background: #e3b06a;
+}
+
+/* ============ TASK LIST ============ */
+
+#lista-tareas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#lista-tareas .tarea {
+  background: #1b1f27;
+  border: 1px solid #232830;
+  border-left: 2px solid #5b6170;
+  border-radius: 4px;
+  padding: 15px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+#lista-tareas .tarea.pendiente {
+  border-left-color: #d4a056;
+}
+
+#lista-tareas .tarea.completada {
+  border-left-color: #7a9b76;
+  opacity: 0.65;
+}
+
+#lista-tareas .tarea-info {
+  flex: 1;
+  min-width: 0;
+}
+
+#lista-tareas .tarea-titulo {
+  font-weight: 600;
+  font-size: 14px;
+  color: #f0f1f4;
+  margin: 0 0 4px;
+}
+
+#lista-tareas .tarea.completada .tarea-titulo {
+  text-decoration: line-through;
+  color: #8b909c;
+}
+
+#lista-tareas .tarea-descripcion {
+  font-size: 13px;
+  color: #8b909c;
+  margin: 0;
+}
+
+#lista-tareas .tarea-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: #5b6170;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+#lista-tareas .tarea-acciones {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+#lista-tareas .tarea-acciones button {
+  background: transparent;
+  border: 1px solid #333a47;
+  border-radius: 3px;
+  color: #8b909c;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  padding: 7px 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+#lista-tareas .tarea-acciones button:hover {
+  border-color: #d4a056;
+  color: #d4a056;
+}
+
+#lista-tareas .tarea-acciones button.eliminar:hover {
+  border-color: #c2685f;
+  color: #c2685f;
+}
+
+.lista-vacia {
+  text-align: center;
+  padding: 56px 24px;
+  color: #5b6170;
+  font-size: 13px;
+  border: 1px dashed #2a2f3a;
+  border-radius: 4px;
+}
+
+/* ============ RESPONSIVE ============ */
+
+@media (max-width: 480px) {
+  #auth-section {
+    margin-top: 6vh;
+  }
+
+  #tasks-section {
+    padding: 28px 16px 40px;
+  }
+
+  #tasks-toolbar-actions {
+    width: 100%;
+  }
+
+  #buscar-tarea {
+    flex: 1;
+    width: auto;
+  }
+
+  #lista-tareas .tarea {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #lista-tareas .tarea-acciones {
+    align-self: flex-end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}

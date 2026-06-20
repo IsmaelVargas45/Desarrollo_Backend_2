@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "targets": {
     "net8.0": {
       "Humanizer.Core/2.14.1": {
@@ -3475,19 +3475,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\alan1\\.nuget\\packages\\": {}
+    "C:\\Users\\54264\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\alan1\\Desktop\\gestor\\Desarrollo_Backend_2\\Backend-2.csproj",
+      "projectUniqueName": "C:\\Proyectos\\integrador\\Backend-2\\Backend-2.csproj",
       "projectName": "Backend-2",
-      "projectPath": "C:\\Users\\alan1\\Desktop\\gestor\\Desarrollo_Backend_2\\Backend-2.csproj",
-      "packagesPath": "C:\\Users\\alan1\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\alan1\\Desktop\\gestor\\Desarrollo_Backend_2\\obj\\",
+      "projectPath": "C:\\Proyectos\\integrador\\Backend-2\\Backend-2.csproj",
+      "packagesPath": "C:\\Users\\54264\\.nuget\\packages\\",
+      "outputPath": "C:\\Proyectos\\integrador\\Backend-2\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\alan1\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\54264\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -3497,6 +3497,7 @@
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {}
         }
@@ -3511,10 +3512,11 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.200"
+      "SdkAnalysisLevel": "10.0.300"
     },
     "frameworks": {
       "net8.0": {
+        "framework": "net8.0",
         "targetAlias": "net8.0",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": {
@@ -3558,19 +3560,19 @@
         "downloadDependencies": [
           {
             "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[8.0.25, 8.0.25]"
+            "version": "[8.0.27, 8.0.27]"
           },
           {
             "name": "Microsoft.NETCore.App.Host.win-x64",
-            "version": "[8.0.25, 8.0.25]"
+            "version": "[8.0.27, 8.0.27]"
           },
           {
             "name": "Microsoft.NETCore.App.Ref",
-            "version": "[8.0.25, 8.0.25]"
+            "version": "[8.0.27, 8.0.27]"
           },
           {
             "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[8.0.25, 8.0.25]"
+            "version": "[8.0.27, 8.0.27]"
           }
         ],
         "frameworkReferences": {
@@ -3581,7 +3583,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

@@ -5,13 +5,15 @@ const API_URL = '/api'; // Cambia por tu puerto
 let token = localStorage.getItem('token');
 let userRole = '';
 let userId = '';
+let tareasActuales = []; // cache de la última carga, para filtrar sin volver a pedir al servidor
 
 // Elementos del DOM
 const authSection = document.getElementById('auth-section');
 const tasksSection = document.getElementById('tasks-section');
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
-const adminPanel = document.getElementById('admin-panel');
+const adminPanelOverlay = document.getElementById('admin-panel-overlay');
+const btnNuevaTarea = document.getElementById('btn-nueva-tarea');
 
 // Funciones de utilidad
 function getHeaders() {
@@ -30,6 +32,9 @@ async function fetchAPI(endpoint, options = {}) {
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `Error HTTP: ${response.status}`);
+    }
+    if (response.status === 204) {
+        return null;
     }
     return response.json();
 }
@@ -77,6 +82,7 @@ function logout() {
     localStorage.removeItem('userName');
     token = null;
     userRole = '';
+    cerrarModalTarea();
     authSection.style.display = 'block';
     tasksSection.style.display = 'none';
     loginForm.style.display = 'block';
@@ -102,41 +108,98 @@ function showTasks() {
     document.getElementById('user-role').textContent = userRole;
 
     if (userRole === 'Admin') {
-        adminPanel.style.display = 'block';
+        btnNuevaTarea.style.display = 'inline-block';
         cargarUsuarios();
     } else {
-        adminPanel.style.display = 'none';
+        btnNuevaTarea.style.display = 'none';
     }
     cargarTareas();
 }
 
+// ---------- Modal: crear tarea ----------
+
+function abrirModalTarea() {
+    adminPanelOverlay.style.display = 'flex';
+    document.getElementById('new-titulo').focus();
+    document.addEventListener('keydown', cerrarModalTareaConEsc);
+}
+
+function cerrarModalTarea() {
+    adminPanelOverlay.style.display = 'none';
+    document.getElementById('new-titulo').value = '';
+    document.getElementById('new-descripcion').value = '';
+    document.removeEventListener('keydown', cerrarModalTareaConEsc);
+}
+
+// Cierra el modal si se hace click en el fondo oscuro (no en la tarjeta)
+function cerrarModalTareaSiFondo(event) {
+    if (event.target === adminPanelOverlay) {
+        cerrarModalTarea();
+    }
+}
+
+function cerrarModalTareaConEsc(event) {
+    if (event.key === 'Escape') {
+        cerrarModalTarea();
+    }
+}
+
+// ---------- Tareas ----------
+
 // Cargar tareas
 async function cargarTareas() {
     try {
-        const tareas = await fetchAPI('/tareas');
-        const container = document.getElementById('lista-tareas');
-        if (tareas.length === 0) {
-            container.innerHTML = '<p>No hay tareas.</p>';
-            return;
-        }
-
-        let html = '<ul>';
-        tareas.forEach(t => {
-            const asignado = t.usuarioAsignado ? t.usuarioAsignado.email : 'Sin asignar';
-            html += `
-                <li>
-                    <strong>${t.titulo}</strong> - ${t.descripcion || ''}
-                    <br>Asignado a: ${asignado} | Estado: ${t.completada ? '✅ Completada' : '⏳ Pendiente'}
-                    ${userRole === 'Admin' ? ` | <button onclick="eliminarTarea(${t.id})">Eliminar</button>` : ''}
-                    ${!t.completada && userRole !== 'Admin' ? ` | <button onclick="marcarCompletada(${t.id})">Marcar completada</button>` : ''}
-                </li>
-            `;
-        });
-        html += '</ul>';
-        container.innerHTML = html;
+        tareasActuales = await fetchAPI('/tareas');
+        renderizarTareas(tareasActuales);
     } catch (error) {
         alert('Error al cargar tareas: ' + error.message);
     }
+}
+
+// Filtra el cache local por título (no vuelve a pedir al servidor)
+function filtrarTareas() {
+    const texto = document.getElementById('buscar-tarea').value.trim().toLowerCase();
+    if (!texto) {
+        renderizarTareas(tareasActuales);
+        return;
+    }
+    const filtradas = tareasActuales.filter(t => t.titulo.toLowerCase().includes(texto));
+    renderizarTareas(filtradas);
+}
+
+function renderizarTareas(tareas) {
+    const container = document.getElementById('lista-tareas');
+    if (tareas.length === 0) {
+        container.innerHTML = '<div class="lista-vacia">No hay tareas todavía.</div>';
+        return;
+    }
+
+    container.innerHTML = tareas.map(t => {
+        const asignado = t.usuarioAsignado ? t.usuarioAsignado.email : 'Sin asignar';
+        const estadoClase = t.completada ? 'completada' : 'pendiente';
+        const estadoTexto = t.completada ? 'Completada' : 'Pendiente';
+
+        const botonCompletar = (!t.completada && userRole !== 'Admin')
+            ? `<button onclick="marcarCompletada(${t.id})">Marcar completada</button>`
+            : '';
+        const botonEliminar = (userRole === 'Admin')
+            ? `<button class="eliminar" onclick="eliminarTarea(${t.id})">Eliminar</button>`
+            : '';
+
+        return `
+            <div class="tarea ${estadoClase}">
+                <div class="tarea-info">
+                    <p class="tarea-titulo">${t.titulo}</p>
+                    ${t.descripcion ? `<p class="tarea-descripcion">${t.descripcion}</p>` : ''}
+                    <p class="tarea-meta">${asignado} · ${estadoTexto}</p>
+                </div>
+                <div class="tarea-acciones">
+                    ${botonCompletar}
+                    ${botonEliminar}
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 // Admin: cargar usuarios para el select
@@ -164,9 +227,8 @@ async function crearTarea() {
             method: 'POST',
             body: JSON.stringify({ titulo, descripcion, usuarioAsignadoId })
         });
+        cerrarModalTarea();
         cargarTareas();
-        document.getElementById('new-titulo').value = '';
-        document.getElementById('new-descripcion').value = '';
     } catch (error) {
         alert('Error al crear tarea: ' + error.message);
     }
