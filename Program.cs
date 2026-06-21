@@ -38,6 +38,13 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// builder.Services.Configure<IdentityOptions>(options =>
+// {
+//     options.User.RequireUniqueEmail = true;
+//     // Asegurar que el normalizador de emails funcione
+//     options.User.Normalizer = new UpperInvariantLookupNormalizer();
+// });
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));

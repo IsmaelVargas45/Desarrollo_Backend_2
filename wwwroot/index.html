@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tareas</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div id="app">
         <!-- Login / Register -->
         <div id="auth-section">
-            <h1>Tareas</h1>
+      
             <div id="login-form">
                 <h2>Iniciar Sesión</h2>
                 <input type="email" id="login-email" placeholder="Email">
@@ -19,10 +21,16 @@
                 <p>¿No tienes cuenta? <a href="#" onclick="showRegister()">Regístrate</a></p>
             </div>
             <div id="register-form" style="display:none;">
-                <h2>Registro</h2>
-                <input type="text" id="register-nombre" placeholder="Nombre completo">
-                <input type="email" id="register-email" placeholder="Email">
-                <input type="password" id="register-password" placeholder="Contraseña">
+                <h2>Registrarse</h2>
+                <input type="text" id="register-nombre" placeholder="Nombre completo" required>
+                <input type="email" id="register-email" placeholder="Email" required>
+                <input type="password" id="register-password" placeholder="Contraseña" required>
+                <!-- 💡 Indicador de requisitos de contraseña -->
+                <div id="password-requirements" style="font-size: 0.8rem; color: #666; margin: 4px 0 8px 0;">
+                    La contraseña debe tener al menos 6 caracteres, incluir mayúscula, minúscula, número y un símbolo.
+                </div>
+                <!-- 💬 Aquí mostraremos los errores -->
+                <div id="register-error" style="color: red; margin: 8px 0; display: none;"></div>
                 <button onclick="register()">Registrarse</button>
                 <p>¿Ya tienes cuenta? <a href="#" onclick="showLogin()">Inicia sesión</a></p>
             </div>
@@ -36,7 +44,7 @@
             </div>
 
             <div id="tasks-toolbar">
-                <h2>Mis Tareas</h2>
+                <h2 id="titulo-tarea" >Mis Tareas</h2>
                 <div id="tasks-toolbar-actions">
                     <input type="text" id="buscar-tarea" placeholder="Buscar por título..." oninput="filtrarTareas()">
                     <button id="btn-nueva-tarea" onclick="abrirModalTarea()" style="display:none;">Crear tarea</button>
@@ -61,4 +69,5 @@
 
     <script src="js/app.js"></script>
 </body>
+
 </html>

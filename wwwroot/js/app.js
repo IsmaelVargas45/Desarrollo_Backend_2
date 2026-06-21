@@ -30,17 +30,26 @@ async function fetchAPI(endpoint, options = {}) {
         ...options,
         headers: { ...getHeaders(), ...options.headers }
     });
+
+    // ✅ Si es login y da 401, NO lo tratamos como sesión expirada
+    if (response.status === 401 && endpoint === '/auth/login') {
+        // Dejamos que el login maneje el error
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Credenciales inválidas');
+    }
+
     if (response.status === 401) {
+        // Para cualquier otro endpoint, sesión expirada
         logout();
         throw new Error('Tu sesión expiró. Iniciá sesión nuevamente.');
     }
+
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `Error HTTP: ${response.status}`);
     }
-    if (response.status === 204) {
-        return null;
-    }
+
+    if (response.status === 204) return null;
     return response.json();
 }
 
@@ -48,11 +57,15 @@ async function fetchAPI(endpoint, options = {}) {
 async function login() {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
+    console.log('Intentando login con:', { email, password: password ? '****' : '' });
     try {
         const data = await fetchAPI('/auth/login', {
             method: 'POST',
             body: JSON.stringify({ email, password })
         });
+        // Dentro de login, después de obtener data
+        console.log('Token:', data.token);
+        localStorage.setItem('token', data.token);
         token = data.token;
         userRole = data.roles[0]; // Asumimos que tiene al menos un rol
         userId = data.email; // Podríamos guardar más info
@@ -64,21 +77,87 @@ async function login() {
         alert('Error en login: ' + error.message);
     }
 }
-
+// Función de registro con validación y manejo detallado de errores
 async function register() {
-    const nombre = document.getElementById('register-nombre').value;
-    const email = document.getElementById('register-email').value;
+    const nombre = document.getElementById('register-nombre').value.trim();
+    const email = document.getElementById('register-email').value.trim();
     const password = document.getElementById('register-password').value;
-    try {
-        await fetchAPI('/auth/register', {
-            method: 'POST',
-            body: JSON.stringify({ nombreCompleto: nombre, email, password })
-        });
-        alert('Usuario registrado. Ahora inicia sesión.');
-        showLogin();
-    } catch (error) {
-        alert('Error en registro: ' + error.message);
+    const errorDiv = document.getElementById('register-error');
+    errorDiv.style.display = 'none'; // ocultar error previo
+
+    // ✅ Validación previa en el frontend (opcional pero recomendable)
+    if (!nombre || !email || !password) {
+        mostrarErrorRegistro('Todos los campos son obligatorios.');
+        return;
     }
+
+    if (password.length < 6) {
+        mostrarErrorRegistro('La contraseña debe tener al menos 6 caracteres.');
+        return;
+    }
+
+    // (Opcional) Validar mayúscula, minúscula, número y símbolo con regex
+    const tieneMayuscula = /[A-Z]/.test(password);
+    const tieneMinuscula = /[a-z]/.test(password);
+    const tieneNumero = /\d/.test(password);
+    const tieneSimbolo = /[^A-Za-z0-9]/.test(password);
+
+    if (!tieneMayuscula || !tieneMinuscula || !tieneNumero || !tieneSimbolo) {
+        mostrarErrorRegistro(
+            'La contraseña debe contener al menos una mayúscula, una minúscula, un número y un símbolo (ej: !@#$%).'
+        );
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nombreCompleto: nombre,
+                email: email,
+                password: password
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            // 🔍 Capturamos los errores devueltos por Identity
+            let mensajeError = data.message || 'Error al registrar usuario.';
+
+            // Si hay una lista de errores (Identity devuelve "errors")
+            if (data.errors && Array.isArray(data.errors)) {
+                // Si son objetos con "description", los extraemos
+                const descripciones = data.errors.map(e => e.description || e).join('\n');
+                mensajeError += '\n' + descripciones;
+            } else if (data.errors && typeof data.errors === 'object') {
+                // A veces viene un objeto con claves
+                const erroresTexto = Object.values(data.errors).flat().join('\n');
+                mensajeError += '\n' + erroresTexto;
+            }
+
+            throw new Error(mensajeError);
+        }
+
+        // ✅ Registro exitoso
+        alert('¡Usuario registrado correctamente! Ahora inicia sesión.');
+        showLogin();
+        // Limpiar formulario
+        document.getElementById('register-nombre').value = '';
+        document.getElementById('register-email').value = '';
+        document.getElementById('register-password').value = '';
+
+    } catch (error) {
+        mostrarErrorRegistro(error.message);
+    }
+}
+
+// Función auxiliar para mostrar errores en el div
+function mostrarErrorRegistro(mensaje) {
+    const errorDiv = document.getElementById('register-error');
+    errorDiv.textContent = mensaje;
+    errorDiv.style.display = 'block';
 }
 
 function logout() {
@@ -111,6 +190,7 @@ function showTasks() {
     tasksSection.style.display = 'block';
     document.getElementById('user-name').textContent = localStorage.getItem('userName') || '';
     document.getElementById('user-role').textContent = userRole;
+    document.getElementById('titulo-tarea').textContent = userRole === 'Admin' ? 'Todas las Tareas' : 'Mis Tareas';
 
     if (userRole === 'Admin') {
         btnNuevaTarea.style.display = 'inline-block';

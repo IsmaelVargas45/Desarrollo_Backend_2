@@ -7,7 +7,9 @@ using System.Security.Claims;
 using System.Text;
 using Desarrollo_Backend_2.Models;
 using Desarrollo_Backend_2.DTOs; // Vamos a crear DTOs
+using Microsoft.EntityFrameworkCore;
 namespace Desarrollo_Backend_2.Controllers
+
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -35,50 +37,92 @@ namespace Desarrollo_Backend_2.Controllers
             {
                 Email = model.Email,
                 UserName = model.Email,
-                NombreCompleto = model.NombreCompleto
+                NombreCompleto = model.NombreCompleto,
+                NormalizedEmail = _userManager.NormalizeEmail(model.Email),
+                NormalizedUserName = _userManager.NormalizeName(model.Email)
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
+            if (!result.Succeeded){
+                var errors = result.Errors.Select(e => e.Description);
                 return BadRequest(new { message = "Error al crear usuario", errors = result.Errors });
+            }
+            // Forzar la actualización del NormalizedEmail (por si acaso)
+            await _userManager.UpdateNormalizedEmailAsync(user);
+            await _userManager.UpdateNormalizedUserNameAsync(user);
 
-            // Asignar rol "User" por defecto
+            // Asegurar rol "User"
+            if (!await _roleManager.RoleExistsAsync("User"))
+                await _roleManager.CreateAsync(new IdentityRole("User"));
+        
             await _userManager.AddToRoleAsync(user, "User");
-
+        
             return Ok(new { message = "Usuario registrado exitosamente" });
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
-            {
-                var authClaims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id),
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                };
+    
+    Console.WriteLine($"📧 Email recibido: '{model.Email}'");
+    Console.WriteLine($"📧 Longitud: {model.Email?.Length}");
 
-                var roles = await _userManager.GetRolesAsync(user);
-                foreach (var role in roles)
-                {
-                    authClaims.Add(new Claim(ClaimTypes.Role, role));
-                }
+    // 1. Búsqueda normal (FindByEmailAsync)
+    var user = await _userManager.FindByEmailAsync(model.Email);
+    Console.WriteLine($"🔍 FindByEmailAsync: {(user != null ? "✅ Encontrado" : "❌ No encontrado")}");
 
-                var token = GenerateJwtToken(authClaims);
-                return Ok(new
-                {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),
-                    expiration = token.ValidTo,
-                    roles = roles,
-                    email = user.Email,
-                    nombre = user.NombreCompleto
-                });
-            }
-            return Unauthorized(new { message = "Credenciales inválidas" });
+    // 2. Búsqueda directa sin normalización
+    var userDirect = await _userManager.Users
+        .FirstOrDefaultAsync(u => u.Email == model.Email);
+    Console.WriteLine($"🔍 Búsqueda directa (Email): {(userDirect != null ? "✅ Encontrado" : "❌ No encontrado")}");
+
+    // 3. Búsqueda por UserName
+    var userByName = await _userManager.FindByNameAsync(model.Email);
+    Console.WriteLine($"🔍 FindByNameAsync: {(userByName != null ? "✅ Encontrado" : "❌ No encontrado")}");
+
+    // 4. Búsqueda ignorando mayúsculas/minúsculas
+    var userIgnoreCase = await _userManager.Users
+        .FirstOrDefaultAsync(u => u.Email.ToLower() == model.Email.ToLower());
+    Console.WriteLine($"🔍 Búsqueda ignore case: {(userIgnoreCase != null ? "✅ Encontrado" : "❌ No encontrado")}");
+
+    // Si algún método lo encuentra, usamos ese usuario
+    user = user ?? userDirect ?? userByName ?? userIgnoreCase;
+
+    if (user == null)
+        return Unauthorized(new { message = "Usuario no encontrado" });
+
+
+        // Verificar contraseña
+        var passwordValid = await _userManager.CheckPasswordAsync(user, model.Password);
+        if (!passwordValid)
+        {
+            return Unauthorized(new { message = "Contraseña incorrecta" });
+        }
+    
+        // Si llega aquí, las credenciales son correctas
+        var authClaims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        };
+    
+        var roles = await _userManager.GetRolesAsync(user);
+        foreach (var role in roles)
+        {
+            authClaims.Add(new Claim(ClaimTypes.Role, role));
+        }
+    
+        var token = GenerateJwtToken(authClaims);
+        return Ok(new
+        {
+            token = new JwtSecurityTokenHandler().WriteToken(token),
+            expiration = token.ValidTo,
+            roles = roles,
+            email = user.Email,
+            nombre = user.NombreCompleto
+        });
         }
 
         private JwtSecurityToken GenerateJwtToken(List<Claim> authClaims)
