@@ -6,6 +6,7 @@ let token = localStorage.getItem('token');
 let userRole = '';
 let userId = '';
 let tareasActuales = []; // cache de la última carga, para filtrar sin volver a pedir al servidor
+let tareaEditandoId = null;
 
 // Elementos del DOM
 const authSection = document.getElementById('auth-section');
@@ -29,6 +30,10 @@ async function fetchAPI(endpoint, options = {}) {
         ...options,
         headers: { ...getHeaders(), ...options.headers }
     });
+    if (response.status === 401) {
+        logout();
+        throw new Error('Tu sesión expiró. Iniciá sesión nuevamente.');
+    }
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `Error HTTP: ${response.status}`);
@@ -119,6 +124,17 @@ function showTasks() {
 // ---------- Modal: crear tarea ----------
 
 function abrirModalTarea() {
+    tareaEditandoId = null;
+
+    document.getElementById('titulo-modal-tarea').textContent =
+        'Crear nueva tarea';
+
+    document.getElementById('btn-guardar-tarea').textContent =
+        'Crear';
+
+    document.getElementById('new-titulo').value = '';
+    document.getElementById('new-descripcion').value = '';
+
     adminPanelOverlay.style.display = 'flex';
     document.getElementById('new-titulo').focus();
     document.addEventListener('keydown', cerrarModalTareaConEsc);
@@ -128,6 +144,8 @@ function cerrarModalTarea() {
     adminPanelOverlay.style.display = 'none';
     document.getElementById('new-titulo').value = '';
     document.getElementById('new-descripcion').value = '';
+    document.getElementById('new-usuario').selectedIndex = 0;
+    tareaEditandoId = null;
     document.removeEventListener('keydown', cerrarModalTareaConEsc);
 }
 
@@ -173,7 +191,6 @@ function renderizarTareas(tareas) {
         container.innerHTML = '<div class="lista-vacia">No hay tareas todavía.</div>';
         return;
     }
-
     container.innerHTML = tareas.map(t => {
         const asignado = t.usuarioAsignado ? t.usuarioAsignado.email : 'Sin asignar';
         const estadoClase = t.completada ? 'completada' : 'pendiente';
@@ -181,6 +198,9 @@ function renderizarTareas(tareas) {
 
         const botonCompletar = (!t.completada && userRole !== 'Admin')
             ? `<button onclick="marcarCompletada(${t.id})">Marcar completada</button>`
+            : '';
+        const botonEditar = (userRole === 'Admin')
+            ? `<button onclick="abrirEditarTarea(${t.id})">Editar</button>`
             : '';
         const botonEliminar = (userRole === 'Admin')
             ? `<button class="eliminar" onclick="eliminarTarea(${t.id})">Eliminar</button>`
@@ -195,13 +215,34 @@ function renderizarTareas(tareas) {
                 </div>
                 <div class="tarea-acciones">
                     ${botonCompletar}
+                    ${botonEditar}
                     ${botonEliminar}
                 </div>
             </div>
         `;
     }).join('');
 }
+// Admin: editar tarea (solo título y descripción, no reasignar ni cambiar estado)
+function abrirEditarTarea(id) {
+    const tarea = tareasActuales.find(t => t.id === id);
+    if (!tarea) return;
 
+    tareaEditandoId = id;
+
+    document.getElementById('new-titulo').value = tarea.titulo;
+    document.getElementById('new-descripcion').value =
+        tarea.descripcion || '';
+    document.getElementById('new-usuario').value =
+        tarea.usuarioAsignadoId;
+
+    document.getElementById('titulo-modal-tarea').textContent =
+        'Editar tarea';
+
+    document.getElementById('btn-guardar-tarea').textContent =
+        'Guardar cambios';
+
+    adminPanelOverlay.style.display = 'flex';
+}
 // Admin: cargar usuarios para el select
 async function cargarUsuarios() {
     try {
@@ -234,12 +275,42 @@ async function crearTarea() {
     }
 }
 
+// Admin: guardar tarea (decide si crear o editar según el estado de tareaEditandoId)
+function guardarTarea() {
+    if (tareaEditandoId === null) {
+        crearTarea();
+    } else {
+        editarTarea();
+    }
+}
+// Admin: editar tarea
+async function editarTarea() {
+    const titulo = document.getElementById('new-titulo').value;
+    const descripcion = document.getElementById('new-descripcion').value;
+    const usuarioAsignadoId =
+        document.getElementById('new-usuario').value;
+
+    try {
+        await fetchAPI(`/tareas/${tareaEditandoId}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                titulo,
+                descripcion,
+                usuarioAsignadoId
+            })
+        });
+
+        cerrarModalTarea();
+        cargarTareas();
+    } catch (error) {
+        alert('Error al editar: ' + error.message);
+    }
+}
 // Usuario: marcar completada
 async function marcarCompletada(id) {
     try {
-        await fetchAPI(`/tareas/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify({ completada: true })
+        await fetchAPI(`/tareas/${id}/completar`, {
+            method: 'PATCH'
         });
         cargarTareas();
     } catch (error) {
@@ -258,16 +329,30 @@ async function eliminarTarea(id) {
     }
 }
 
+// Verifica si el JWT guardado todavía es válido (no vencido), sin pegarle al servidor.
+function tokenEsValido(jwt) {
+    if (!jwt) return false;
+    try {
+        const payload = JSON.parse(atob(jwt.split('.')[1]));
+        if (!payload.exp) return false;
+        const expiraEnMs = payload.exp * 1000;
+        return Date.now() < expiraEnMs;
+    } catch {
+        return false;
+    }
+}
+
 // Comprobar si ya hay token al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
     const savedToken = localStorage.getItem('token');
     const savedRole = localStorage.getItem('role');
-    if (savedToken && savedRole) {
+
+    if (savedToken && savedRole && tokenEsValido(savedToken)) {
         token = savedToken;
         userRole = savedRole;
         showTasks();
     } else {
-        authSection.style.display = 'block';
-        tasksSection.style.display = 'none';
+        // Token ausente, vencido o corrupto: limpiamos todo y mostramos login
+        logout();
     }
 });

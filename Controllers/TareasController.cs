@@ -134,6 +134,27 @@ namespace Desarrollo_Backend_2.Controllers
             return NoContent();
         }
 
+        // PATCH: api/tareas/{id}/completar (Usuario marca su tarea como completada)
+        [HttpPatch("{id}/completar")]
+        public async Task<IActionResult> MarcarCompletada(int id)
+        {
+            var tarea = await _context.Tareas.FindAsync(id);
+            if (tarea == null)
+                return NotFound();
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (tarea.UsuarioAsignadoId != user.Id)
+                return Forbid();
+
+            tarea.Completada = true;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        
         // GET: api/tareas/usuarios (Admin obtiene lista de usuarios para asignar)
         [HttpGet("usuarios")]
         [Authorize(Roles = "Admin")]

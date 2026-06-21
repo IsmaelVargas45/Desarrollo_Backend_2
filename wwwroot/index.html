@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Manager</title>
+    <title>Tareas</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="app">
         <!-- Login / Register -->
         <div id="auth-section">
-            <h1>Task Manager</h1>
+            <h1>Tareas</h1>
             <div id="login-form">
                 <h2>Iniciar Sesión</h2>
                 <input type="email" id="login-email" placeholder="Email">
@@ -50,11 +50,11 @@
         <div id="admin-panel-overlay" style="display:none;" onclick="cerrarModalTareaSiFondo(event)">
             <div id="admin-panel">
                 <button id="admin-panel-close" onclick="cerrarModalTarea()" aria-label="Cerrar">&times;</button>
-                <h3>Crear nueva tarea</h3>
+                <h3 id="titulo-modal-tarea">Crear nueva tarea</h3>
                 <input type="text" id="new-titulo" placeholder="Título">
                 <input type="text" id="new-descripcion" placeholder="Descripción">
                 <select id="new-usuario"></select>
-                <button onclick="crearTarea()">Crear</button>
+                <button id="btn-guardar-tarea" onclick="guardarTarea()">Crear</button>
             </div>
         </div>
     </div>
