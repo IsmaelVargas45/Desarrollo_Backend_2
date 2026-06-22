@@ -14,6 +14,7 @@ namespace Desarrollo_Backend_2.Controllers
     [Authorize] // Requiere autenticación para todos los endpoints
     public class TareasController : ControllerBase
     {
+        //Dependencias necesarias para acceder a la base de datos y obtener información del usuario
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -91,7 +92,6 @@ namespace Desarrollo_Backend_2.Controllers
         {
             var tarea = await _context.Tareas.FindAsync(id);
             if (tarea == null) return NotFound();
-
             var user = await _userManager.GetUserAsync(User);
             var roles = await _userManager.GetRolesAsync(user);
 

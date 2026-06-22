@@ -19,7 +19,6 @@ namespace Desarrollo_Backend_2.Data
                     await roleManager.CreateAsync(new IdentityRole(roleName));
                 }
             }
-
             // Crear admin por defecto
             var adminEmail = "admin@example.com";
             var adminUser = await userManager.FindByEmailAsync(adminEmail);

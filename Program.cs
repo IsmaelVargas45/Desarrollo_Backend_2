@@ -38,12 +38,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// builder.Services.Configure<IdentityOptions>(options =>
-// {
-//     options.User.RequireUniqueEmail = true;
-//     // Asegurar que el normalizador de emails funcione
-//     options.User.Normalizer = new UpperInvariantLookupNormalizer();
-// });
 
 builder.Services.AddAuthorization(options =>
 {
@@ -52,7 +46,6 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

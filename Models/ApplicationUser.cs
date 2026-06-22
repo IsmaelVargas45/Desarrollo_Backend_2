@@ -7,5 +7,6 @@ namespace Desarrollo_Backend_2.Models
     {
         // Puedes agregar propiedades extra si quieres
         public string? NombreCompleto { get; set; }
+
     }
 }

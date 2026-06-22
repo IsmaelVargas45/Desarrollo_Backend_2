@@ -8,13 +8,15 @@ using System.Text;
 using Desarrollo_Backend_2.Models;
 using Desarrollo_Backend_2.DTOs; // Vamos a crear DTOs
 using Microsoft.EntityFrameworkCore;
-namespace Desarrollo_Backend_2.Controllers
 
+
+namespace Desarrollo_Backend_2.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
+        //Dpendencias necesarias para acceder a manejar usuarios, roles y configuración
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
@@ -88,17 +90,16 @@ namespace Desarrollo_Backend_2.Controllers
     // Si algún método lo encuentra, usamos ese usuario
     user = user ?? userDirect ?? userByName ?? userIgnoreCase;
 
+
     if (user == null)
         return Unauthorized(new { message = "Usuario no encontrado" });
-
-
         // Verificar contraseña
         var passwordValid = await _userManager.CheckPasswordAsync(user, model.Password);
         if (!passwordValid)
         {
             return Unauthorized(new { message = "Contraseña incorrecta" });
         }
-    
+
         // Si llega aquí, las credenciales son correctas
         var authClaims = new List<Claim>
         {
